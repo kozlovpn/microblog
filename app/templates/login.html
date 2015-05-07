@@ -3,6 +3,16 @@
 {% block content %}
 
 <h1>Sign In</h1>
+<hr>
+	{% with messages = get_flashed_messages() %}
+	{% if messages %}
+	<ul>
+	{% for message in messages %}
+	    <li>{{message}}</li>
+	{% endfor %}
+	</ul>
+	{% endif %}
+	{% endwith %}
 <form action="/login" method="POST">
       {{ form.hidden_tag() }}
       {{ form.email.label }} {{ form.email(size=50) }}<br><br>
