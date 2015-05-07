@@ -3,14 +3,12 @@
 {% block content %}
 
 <h1>Sign In</h1>
-<form action="{{ url_for('login') }}" method=post>
-    <p>
-      <p>Username:</p>
-      <p><input type="text" name="username"></p>
-      <p>Password:</p>
-      <p><input type="password" name="password"></p>
+<form action="/login" method="POST">
+      {{ form.hidden_tag() }}
+      {{ form.email.label }} {{ form.email(size=50) }}<br><br>
+      {{ form.hidden_tag() }}
+      {{ form.password.label }} {{ form.password(size=50) }}
       <p>{{form.remember_me}} Remember Me</p>
-      <p><input type="submit" value="Login"></p>
-    </p>
+      <input type="submit" value="Sign In">
 </form>
 {% endblock %}

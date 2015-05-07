@@ -1,6 +1,6 @@
 from flask import render_template, flash, redirect, session, url_for, request, g
 from flask.ext.login import login_user, logout_user, current_user, login_required
-from app import app, db, lm, oid
+from app import app, db
 from forms import LoginForm
 from models import User, ROLE_USER, ROLE_ADMIN
 
@@ -25,21 +25,41 @@ def index():
 	posts = posts)
 
 
-@app.route('/login', methods = ['GET', 'POST'])
-@oid.loginhandler
+@app.route('/login', methods=['GET', 'POST'])
 def login():
-    if g.user is not None and g.user.is_authenticated():
-        return redirect(url_for('index'))
     form = LoginForm()
     if form.validate_on_submit():
         session['remember_me'] = form.remember_me.data
-        return oid.try_login(form.openid.data, ask_for = ['nickname', 'email'])
+        pswd = form.password.data
+        email = form.email.data
+        r_user_email = User.query.filter_by(email=email).first()
     return render_template('login.html',
-                           title = 'Sign In',
-                           form = form,
-                           providers = app.config['OPENID_PROVIDERS'])
+                           title='Sign In',
+                           form=form)
 
-@oid.after_login
+@app.route('/register', methods=['GET', 'POST'])
+def register():
+    form = LoginForm()
+    if form.validate_on_submit():
+        pswd = form.password.data
+        email = form.email.data
+        nickname = email.split('@')[0]
+        user = User(nickname, pswd, email)
+        r_user = User.query.filter_by(email=email).first()
+        if r_user is None:
+            db.session.add(user)
+            db.session.commit()
+            flash('User successfully registered!')
+            return redirect(url_for('index'))
+        else:
+            flash('Error! This email alredy registered')
+            return redirect(url_for('register'))
+    else:
+        return render_template('register.html',
+                                title='Register',
+                                form=form)
+
+#@oid.after_login
 def after_login(resp):
     if resp.email is None or resp.email == "":
         flash('Invalid login. Please try again.')
@@ -49,7 +69,7 @@ def after_login(resp):
         nickname = resp.nickname
         if nickname is None or nickname == "":
             nickname = resp.email.split('@')[0]
-            user = User(nickname = nickname, email = resp.email, role = ROLE_USER)
+            user = User(nickname=nickname, email=resp.email, role=ROLE_USER)
             db.session.add(user)
             db.session.commit()
         remember_me = False
