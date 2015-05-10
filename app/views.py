@@ -5,11 +5,10 @@ from forms import LoginForm
 from models import User, ROLE_USER, ROLE_ADMIN
 
 login_manager = LoginManager()
-
+login_manager.init_app(app)
 
 @app.route('/index')
 def index():
-    #user = g.user
     posts = [
         {
             'author': {'nickname': 'John'},
@@ -24,27 +23,34 @@ def index():
                            title='Home',
                            posts=posts)
 
+@login_manager.user_loader
+def load_user(userid):
+    return User.query.get(userid)
+
 @app.route('/login', methods=['GET', 'POST'])
 def login():
+    if g.user is not None and g.user.is_authenticated():
+      return redirect(url_for('index'))
     form = LoginForm()
     if form.validate_on_submit():
         remember = form.remember_me.data
         pswd = form.password.data
         email = form.email.data
         r_user = User.query.filter_by(email=email, password=pswd).first()
+        userid = r_user.id
         if r_user is None:
             flash('Incorrect email or password!')
         else:
-            #login_user(r_user, remember=remember)
+            u = User.query.get(r_user.id)
+            login_user(u, remember=remember)
+            flash(r_user.id)
             flash('Logged in successfully!')
             return redirect(url_for('index'))
     return render_template('login.html',
                            title='Sign In',
                            form=form)
 
-@login_manager.user_loader
-def load_user(id):
-    return User.query.filter_by(id=id).first()
+
 
 @app.route('/register', methods=['GET', 'POST'])
 def register():
