@@ -9,19 +9,23 @@ login_manager.init_app(app)
 
 @app.route('/index')
 def index():
-    posts = [
-        {
-            'author': {'nickname': 'John'},
-            'body': 'Beautiful day in Portland!'
-        },
-        {
-            'author': {'nickname': 'Susan'},
-            'body': 'The Avengers movie was so cool!'
-        }
-    ]
-    return render_template("index.html",
-                           title='Home',
-                           posts=posts)
+    if g.user.is_authenticated():
+        posts = [
+            {
+                'author': {'nickname': 'John'},
+                'body': 'Beautiful day in Portland!'
+            },
+            {
+                'author': {'nickname': 'Susan'},
+                'body': 'The Avengers movie was so cool!'
+            }
+        ]
+        return render_template("index.html",
+                               title='Home',
+                               posts=posts)
+    else:
+        flash('Please, Sign In!')
+        return redirect(url_for('login'))
 
 @login_manager.user_loader
 def load_user(userid):
@@ -37,12 +41,10 @@ def login():
         pswd = form.password.data
         email = form.email.data
         r_user = User.query.filter_by(email=email, password=pswd).first()
-        userid = r_user.id
         if r_user is None:
             flash('Incorrect email or password!')
         else:
-            u = User.query.get(r_user.id)
-            login_user(u, remember=remember)
+            login_user(r_user, remember=remember)
             flash(r_user.id)
             flash('Logged in successfully!')
             return redirect(url_for('index'))
@@ -50,7 +52,10 @@ def login():
                            title='Sign In',
                            form=form)
 
-
+@app.route('/logout')
+def logout():
+    logout_user()
+    return redirect(url_for('login'))
 
 @app.route('/register', methods=['GET', 'POST'])
 def register():

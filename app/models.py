@@ -25,7 +25,7 @@ class User(db.Model):
         return unicode(self.id)
 
     def is_authenticated(self):
-        return False
+        return True
 
     def __repr__(self):
         return '<User %r>' % (self.nickname)
