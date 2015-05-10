@@ -1,5 +1,5 @@
 from app import db
-import time
+import datetime
 
 ROLE_USER = 0
 ROLE_ADMIN = 1
@@ -32,11 +32,15 @@ class User(db.Model):
 
 
 class Post(db.Model):
-    id = db.Column(db.Integer, primary_key = True)
+    id = db.Column(db.Integer, primary_key=True)
     body = db.Column(db.String(140))
     timestamp = db.Column(db.DateTime)
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'))
 
-    def __init__(self, body):
+    def __init__(self, body, author):
         self.body = body
-        self.timestamp = time.clock()
+        self.timestamp = datetime.datetime.now()
+        self.author = author
+
+    def __repr__(self):
+        return '<Post %r>' % (self.body)

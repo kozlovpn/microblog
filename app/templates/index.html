@@ -2,7 +2,15 @@
 {% block content %}
 <h1>Hi, {{g.user.nickname}}!</h1>
 {% for post in posts %}
-<div><p>{{post.author.nickname}} says: <b>{{post.body}}</b></p></div>
+<div>
+    <p>
+        {% if post.author.nickname==g.user.nickname %}
+        <p>{{post.timestamp.strftime("%Y-%m-%d %H:%M:%S")}} | You said: <b>{{post.body}}</b></p>
+        {% else %}
+        {{post.timestamp.strftime("%Y-%m-%d %H:%M:%S")}} {{post.author.nickname}} says: <b>{{post.body}}</b>
+        {% endif %}
+    </p>
+</div>
 
 {% endfor %}
 {% endblock %}

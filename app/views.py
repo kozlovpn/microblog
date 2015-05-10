@@ -1,15 +1,17 @@
 from flask import render_template, flash, redirect, session, url_for, request, g
 from flask_login import login_user, logout_user, current_user, login_required, LoginManager
 from app import app, db
-from forms import LoginForm
-from models import User, ROLE_USER, ROLE_ADMIN
+from forms import LoginForm, JokeForm
+from models import User, Post, ROLE_USER, ROLE_ADMIN
 
 login_manager = LoginManager()
 login_manager.init_app(app)
 
+#@app.route('/')
 @app.route('/index')
 def index():
     if g.user.is_authenticated():
+        posts2 = g.user.posts.all()
         posts = [
             {
                 'author': {'nickname': 'John'},
@@ -22,7 +24,7 @@ def index():
         ]
         return render_template("index.html",
                                title='Home',
-                               posts=posts)
+                               posts=posts2)
     else:
         flash('Please, Sign In!')
         return redirect(url_for('login'))
@@ -78,6 +80,20 @@ def register():
         return render_template('register.html',
                                title='Register',
                                form=form)
+
+@app.route('/addjoke', methods=['GET', 'POST'])
+def addjoke():
+    form = JokeForm()
+    if form.validate_on_submit():
+        body = form.body.data
+        #timestamp = time.clock()
+        post = Post(body=body, author=g.user)
+        db.session.add(post)
+        db.session.commit()
+        return redirect(url_for('index'))
+    return render_template('addjoke.html',
+                           title='Add Joke',
+                           form=form)
 
 @app.before_request
 def before_request():
