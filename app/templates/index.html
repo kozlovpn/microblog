@@ -1,6 +1,11 @@
 {% extends "base.html" %}
 {% block content %}
 <h1>Hi, {{g.user.nickname}}!</h1>
+<form action="/index" method="POST">
+    {{ form.hidden_tag() }}
+    {{ form.body.label }} {{ form.body(size=30, maxlength=140) }}<br><br>
+    <input type="submit" value="Add Joke">
+</form>
 {% for post in posts %}
 <div>
     <p>

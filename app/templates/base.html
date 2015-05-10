@@ -9,7 +9,6 @@
     <body>
 	<div>Microblog: {% if g.user.is_authenticated() %}
                         <a href="{{ url_for('index') }}">Home</a>
-                        <a href="{{ url_for('addjoke') }}">Add Joke</a>
                         <a href="{{ url_for('logout') }}">Logout</a>
                     {% endif %}
                     {% if not g.user.is_authenticated() %}
