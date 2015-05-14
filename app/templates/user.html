@@ -1,0 +1,10 @@
+{% extends "base.html" %}
+
+{% block content %}
+<h1>User: {{user.nickname}}!</h1>
+{% for post in posts_user %}
+    <p>
+    {{post.timestamp.strftime("%Y-%m-%d %H:%M:%S")}} | {{post.author.nickname}} says: <b>{{post.body}}</b>
+    </p>
+{% endfor %}
+{% endblock %}

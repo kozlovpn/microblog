@@ -11,3 +11,7 @@ class LoginForm(Form):
 
 class JokeForm(Form):
     body = StringField('Joke: ', validators=[DataRequired()])
+
+
+class SearchForm(Form):
+    search = StringField(validators=[DataRequired()])

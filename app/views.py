@@ -1,18 +1,32 @@
 from flask import render_template, flash, redirect, session, url_for, request, g
 from flask_login import login_user, logout_user, current_user, login_required, LoginManager
 from app import app, db
-from forms import LoginForm, JokeForm
+from forms import LoginForm, JokeForm, SearchForm
 from models import User, Post, ROLE_USER, ROLE_ADMIN
 
 login_manager = LoginManager()
 login_manager.init_app(app)
 
-#@app.route('/')
+@app.route('/user/<nickname>', methods=['GET', 'POST'])
+def user(nickname):
+    user = User.query.filter_by(nickname=nickname).first()
+    if user == None:
+        flash('User ' + nickname + ' not found')
+        return redirect(url_for('index'))
+    posts_user = user.posts.all()
+    return render_template('user.html',
+                           user=user,
+                           posts_user=posts_user)
+
+@app.route('/')
 @app.route('/index', methods=['GET', 'POST'])
 def index():
     if g.user.is_authenticated():
         posts = g.user.posts.all()
         form = JokeForm()
+        #import pdb; pdb.set_trace()
+        if g.form2.validate_on_submit():
+            return redirect(url_for('user', nickname=g.form2.search.data))
         if form.validate_on_submit():
             body = form.body.data
             post = Post(body=body, author=g.user)
@@ -23,7 +37,8 @@ def index():
         return render_template("index.html",
                                title='Home',
                                posts=posts,
-                               form=form)
+                               form=form,
+                               form2=g.form2)
     else:
         flash('Please, Sign In!')
         return redirect(url_for('login'))
@@ -83,3 +98,4 @@ def register():
 @app.before_request
 def before_request():
     g.user = current_user
+    g.form2 = SearchForm()
